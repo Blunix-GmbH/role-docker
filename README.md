@@ -1,23 +1,16 @@
 # Ansible Role: Docker
 
-This role installs and configures Docker and Docker-Compose.
-
-Please note that you have to reboot your machine after installation for docker systemd service to start correctly.
-This is because docker needs some kernel modules (error in logs below).
-```
-gitlab-runner.example.com dockerd[1234]: level=warning msg="Your kernel does not support cgroup rt runtime"
-```
+This role installs and configures docker and docker-compose.
 
 # Example play
 
 ```yaml
 - hosts: all
-  vars:
-    docker_enabled: yes
-    docker_compose_version: 1.14.0
-
   roles:
     blunix.role-docker
+  vars:
+    docker_compose_enabled: True
+    docker_compose_version: 1.26.2
 ```
 
 # License

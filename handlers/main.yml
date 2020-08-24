@@ -1,13 +1,8 @@
----
-- name: update apt caches
-  apt:
-    update_cache: yes
-
 - name: restart docker
   service:
     name: docker
     state: restarted
 
-- name: systemd daemon-reload
+- name: reload systemd
   systemd:
-    daemon_reload: yes
+    daemon_reload: True

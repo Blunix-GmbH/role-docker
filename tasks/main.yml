@@ -1,26 +1,63 @@
-- name: include distro vars
-  include_vars: '{{ vars_item }}'
-  with_first_found:
-    - "{{ ansible_distribution }}.{{ ansible_lsb.codename }}.yml"
-    - "{{ ansible_distribution }}.yml"
-    - "default.yml"
-  loop_control:
-    loop_var: vars_item
+- name: install dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - software-properties-common
+    state: present
 
-- name: include distro installer
-  include_tasks: "{{ distro_installer }}"
-  with_first_found:
-    - "install/{{ ansible_distribution }}.{{ ansible_lsb.codename }}.yml"
-    - "install/{{ ansible_distribution }}.yml"
-    - "install/default.yml"
-  loop_control:
-    loop_var: distro_installer
+- name: add apt repository key
+  apt_key:
+    url: "https://download.docker.com/linux/debian/gpg"
+    id: 0EBFCD88
 
-- name: include distro configurator
-  include_tasks: "{{ distro_configurator }}"
-  with_first_found:
-    - "configure/{{ ansible_distribution }}.{{ ansible_lsb.codename }}.yml"
-    - "configure/{{ ansible_distribution }}.yml"
-    - "configure/default.yml"
+- name: add apt repository
+  apt_repository:
+    update_cache: True
+    repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+    mode: 0600
+
+- name: install docker
+  apt:
+    name: docker-ce
+  notify: restart docker
+
+- name: add users to the docker group
+  user:
+    name: "{{ docker_group_user }}"
+    groups: docker
+    append: True
+  with_items: "{{ docker_group_users }}"
   loop_control:
-    loop_var: distro_configurator
+    loop_var: docker_group_user
+
+- name: download docker-compose
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64"
+    dest: /usr/local/bin/docker-compose
+    owner: root
+    group: root
+    mode: 755
+    force: True
+  when: docker_compose_enabled
+
+- name: create systemd configuration directory for proxy
+  when: docker_proxy is defined
+  file:
+    path: /etc/system.d/system/docker.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: configure proxy
+  when: docker_proxy is defined
+  template:
+    src: etc/system.d/system/docker.service.d/http-proxy.conf.j2
+    dest: /etc/system.d/system/docker.service.d/http-proxy.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: reload systemd
