@@ -1,9 +1,0 @@
----
-- name: Converge
-  hosts: all
-  become: True
-  roles:
-    - role: role-docker
-  vars:
-    docker_compose_enabled: True
-    docker_compose_version: 1.26.2

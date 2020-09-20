@@ -29,11 +29,4 @@ def test_docker_hello_world(host):
 
 
 def test_docker_compose(host):
-    assert not host.file("/usr/bin/docker-compose").exists
-
-
-def test_proxy_config(host):
-    f = host.file('/etc/system.d/system/docker.service.d/http-proxy.conf')
-
-    assert f.exists
-    assert f.contains('Environment="HTTP_PROXY=foo"')
+    assert host.file('/usr/local/bin/docker-compose').exists

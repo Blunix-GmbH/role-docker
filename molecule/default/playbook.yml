@@ -1,8 +1,10 @@
----
 - name: Converge
   hosts: all
   become: True
-  vars:
-    docker_proxy: 'foo'
   roles:
     - role: role-docker
+  vars:
+
+    docker_proxy: 'foo'
+    docker_compose_version: 1.26.2
+

@@ -1,3 +1,9 @@
+# There is no release for Debian 11 / bullseye yet, however the one for buster works well
+# Ref: https://github.com/docker/for-linux/issues/724
+#docker_debian_release: "{{ ansible_distribution_release }}"
+docker_debian_release: buster
+
 docker_group_users: []
-docker_compose_enabled: False
-docker_compose_version: 1.26.2
+
+docker_compose_version: 1.27.3
+

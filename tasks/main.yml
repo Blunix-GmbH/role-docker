@@ -15,13 +15,14 @@
 
 - name: add apt repository
   apt_repository:
-    update_cache: True
-    repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+    repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ docker_debian_release }} stable"
     mode: 0600
+    update_cache: True
 
 - name: install docker
   apt:
     name: docker-ce
+    state: present
   notify: restart docker
 
 - name: add users to the docker group
@@ -33,7 +34,8 @@
   loop_control:
     loop_var: docker_group_user
 
-- name: download docker-compose
+
+- name: install docker-compose
   get_url:
     url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64"
     dest: /usr/local/bin/docker-compose
@@ -41,23 +43,3 @@
     group: root
     mode: 755
     force: True
-  when: docker_compose_enabled
-
-- name: create systemd configuration directory for proxy
-  when: docker_proxy is defined
-  file:
-    path: /etc/system.d/system/docker.service.d
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
-
-- name: configure proxy
-  when: docker_proxy is defined
-  template:
-    src: etc/system.d/system/docker.service.d/http-proxy.conf.j2
-    dest: /etc/system.d/system/docker.service.d/http-proxy.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify: reload systemd
